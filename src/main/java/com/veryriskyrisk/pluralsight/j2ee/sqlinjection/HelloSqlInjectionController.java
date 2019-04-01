@@ -44,24 +44,7 @@ public class HelloSqlInjectionController {
                     insertVisitorQuery);
             insertVisitorStatement.execute();
 
-            PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                    "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 10"
-            );
-
-            selectVisitorsStatement.execute();
-            ResultSet selectVisitorsResultset = selectVisitorsStatement.getResultSet();
-
-            Collection<Visitor> visitorList = new LinkedList<Visitor>();
-            while (selectVisitorsResultset.next()) {
-                visitorList.add(new Visitor(
-                        selectVisitorsResultset.getString("name"),
-                        selectVisitorsResultset.getDate("timestamp")
-
-                ));
-
-            }
-
-
+            Collection<Visitor> visitorList = getLatestVisitors(connection);
             model.addAttribute("latestVisitors", visitorList);
 
         } catch (Exception e) {
@@ -79,6 +62,26 @@ public class HelloSqlInjectionController {
         return "welcome";
     }
 
+    private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
+        PreparedStatement selectVisitorsStatement = connection.prepareStatement(
+                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 10"
+        );
+
+        selectVisitorsStatement.execute();
+        ResultSet selectVisitorsResultset = selectVisitorsStatement.getResultSet();
+
+        Collection<Visitor> visitorList = new LinkedList<Visitor>();
+        while (selectVisitorsResultset.next()) {
+            visitorList.add(new Visitor(
+                    selectVisitorsResultset.getString("name"),
+                    selectVisitorsResultset.getDate("timestamp")
+
+            ));
+
+        }
+        return visitorList;
+    }
+
     @GetMapping("/")
     public String index(ModelMap model) {
         Connection connection = null;
@@ -86,14 +89,9 @@ public class HelloSqlInjectionController {
 
         try {
             connection = DriverManager.getConnection(connectionString);
-            PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                    "SELECT name FROM visitors ORDER BY timestamp desc LIMIT 10"
-            );
+            Collection<Visitor> visitorList = getLatestVisitors(connection);
+            model.addAttribute("latestVisitors", visitorList);
 
-            selectVisitorsStatement.execute();
-            ResultSet selectVisitoryResultset = selectVisitorsStatement.getResultSet();
-
-            model.addAttribute("latestVisitors", selectVisitoryResultset);
             model.addAttribute("name", "Anonymous");
 
         } catch (Exception e) {
