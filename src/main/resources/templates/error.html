@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
+
+    <link rel="stylesheet" th:href="@{css/styles.css}">
+
+    <title>Hello, SQL injection!</title>
+</head>
+<body>
+<pre><!-- pre tag here is a workaround for this: https://github.com/thymeleaf/thymeleaf-spring/issues/113 -->
+<p th:if="${status}">
+    <b>Response Status:</b> <span th:text="${status}">status-code</span> <span
+        th:if="${error}" th:text="'('+${error}+')'">error ...</span>
+</p>
+<div th:utext="'Failed URL: ' +  ${url}" th:remove="tag">${url}</div>
+<div th:utext="'Exception: ' + ${exception.message}" th:remove="tag">${exception.message}</div>
+<ul th:remove="tag">
+    <li th:each="ste : ${exception.stackTrace}" th:remove="tag"><span
+            th:utext="${ste}" th:remove="tag">${ste}</span></li>
+</ul>
+
+<div th:utext="'Exception: ' + ${exception.cause.message}" th:remove="tag">${exception.cause.message}</div>
+<ul th:remove="tag">
+    <li th:each="ste : ${exception.cause.stackTrace}" th:remove="tag"><span
+            th:utext="${ste}" th:remove="tag">${ste}</span></li>
+</ul>
+</pre>
+</body>
+</html>

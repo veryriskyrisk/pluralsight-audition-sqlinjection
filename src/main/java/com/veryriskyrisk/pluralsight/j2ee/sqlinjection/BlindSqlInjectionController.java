@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,14 +18,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Controller
-public class HelloSqlInjectionController {
+public class BlindSqlInjectionController {
 
-    private static final Logger logger = Logger.getLogger(HelloSqlInjectionController.class.getName());
+    private static final Logger logger = Logger.getLogger(BlindSqlInjectionController.class.getName());
 
     @Value("${connectionstring}")
     String connectionString;
 
-    @PostMapping("/")
+    @PostMapping("/blind")
     public String persistVisitor(@RequestParam(name = "name", required = false) String name, ModelMap model) {
 
 
@@ -47,8 +49,12 @@ public class HelloSqlInjectionController {
             Collection<Visitor> visitorList = getLatestVisitors(connection);
             model.addAttribute("latestVisitors", visitorList);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            model.addAttribute("exception", sw.toString());
+            logger.log(Level.SEVERE, e.toString(), e);
         } finally {
             try {
                 if (connection != null) {
@@ -64,7 +70,7 @@ public class HelloSqlInjectionController {
 
     private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
         PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 10"
+                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 5"
         );
 
         selectVisitorsStatement.execute();
@@ -82,7 +88,7 @@ public class HelloSqlInjectionController {
         return visitorList;
     }
 
-    @GetMapping("/")
+    @GetMapping("/blind")
     public String index(ModelMap model) {
         Connection connection = null;
 
@@ -93,6 +99,7 @@ public class HelloSqlInjectionController {
             model.addAttribute("latestVisitors", visitorList);
 
             model.addAttribute("name", "Anonymous");
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,21 +118,3 @@ public class HelloSqlInjectionController {
 }
 
 
-class Visitor {
-    private Date timestamp;
-    private String name;
-
-    public Visitor(String name, Date timestamp) {
-        this.timestamp = timestamp;
-        this.name = name;
-    }
-
-
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public String getName() {
-        return name;
-    }
-}

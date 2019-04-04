@@ -8,52 +8,85 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
 
+    <link rel="stylesheet" th:href="@{css/styles.css}">
+
     <title>Hello, SQL injection!</title>
 </head>
 <body>
-<main role="main" class="container">
-
-    <div class="nav-scroller bg-white shadow-sm">
-        <nav class="nav nav-underline">
-            <a class="nav-link active" href="#">Dashboard</a>
-            <a class="nav-link" href="#">
-                Friends
-                <span class="badge badge-pill bg-light align-text-bottom">27</span>
-            </a>
-            <a class="nav-link" href="#">Explore</a>
-            <a class="nav-link" href="#">Suggestions</a>
-            <a class="nav-link" href="#">Link</a>
-            <a class="nav-link" href="#">Link</a>
-            <a class="nav-link" href="#">Link</a>
-            <a class="nav-link" href="#">Link</a>
-            <a class="nav-link" href="#">Link</a>
-        </nav>
+<div class="container">
+    <div class="skewed-nav">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Simple SQL injection</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Blind SQL injection</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Second order SQL injection</a>
+            </li>
+        </ul>
     </div>
+
     <div class="jumbotron">
         <h1 class="display-4">Hello, SQL injection!</h1>
         <p class="lead">This is a first, simple SQL injection example</p>
         <hr class="my-4">
-        <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
-        <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+        <p>Use form below to test for SQL injection</p>
     </div>
 
-    <pre class="prettyprint" th:text="${query}"></pre>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    Join our elite latest visitors list!
+                </div>
+                <div class="card-body">
+                    <h1 th:text="#{hello(${name})}">Hello Anonymous!</h1>
+                    <form action="/simple" method="POST">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input class="form-control" type="text" id="name" name="name"
+                                   placeholder="Enter your name here"/>
+                            <small id="nameHelp" class="form-text text-muted">Submit your name to appear on our visitors
+                                list!
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card-header">
+                Latest visitors
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr th:each="visitor : ${latestVisitors}">
+                        <td th:text="${visitor.name}">Onions</td>
+                        <td th:text="${#dates.formatISO(visitor.timestamp)}">2.41</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <h1 th:text="#{hello(${name})}">Hello Anonymous!</h1>
-    <form action="/" method="POST">
-        <input type="text" name="name"/>
-        <input type="submit"/>
-    </form>
-
-
-    <table class="table">
-        <tr th:each="visitor : ${latestVisitors}">
-            <td th:text="${visitor.name}">Onions</td>
-            <td th:text="${visitor.timestamp}">2.41</td>
-        </tr>
-    </table>
-
-    show debug information: query
+    <div class="card" th:if="${#ctx.containsVariable('query') || #ctx.containsVariable('exception')}">
+        <div class="card-header">
+            <p>
+                <a class="btn btn-danger" data-toggle="collapse" href="#debugInfo" role="button" id="debug"
+                   aria-expanded="false"
+                   aria-controls="debugInfo">Debug information</a>
+            </p>
+        </div>
+        <div class="card-body">
+            <div class="collapse" id="debugInfo">
+                <pre id="queryid" th:if="${query}" class="prettyprint" th:text="${query}"></pre>
+                <pre th:if="${exception}" th:text="${exception}"></pre>
+            </div>
+        </div>
+    </div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -62,9 +95,12 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script-->
 
 
-</main>
+</div>
+</div>
+<script type="text/javascript" th:src="@{/js/jquery-3.3.1.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/prettify.js}"></script>
+<script type="text/javascript" th:src="@{/js/utilities.js}"></script>
 
 </body>
 </html>
