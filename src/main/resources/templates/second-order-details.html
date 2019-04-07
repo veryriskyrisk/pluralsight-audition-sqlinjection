@@ -32,41 +32,34 @@
     </div>
 
     <div class="jumbotron">
-        <h1 class="display-4">Hello, blind SQL injection!</h1>
+        <h1 class="display-4">Hello, second order SQL injection!</h1>
     </div>
 
     <div class="row">
         <div class="col-sm-6">
             <div class="card">
                 <div class="card-header">
-                    Join our elite latest visitors list!
+                    Visit details
                 </div>
                 <div class="card-body">
-                    <h1 th:text="#{hello(${name})}">Hello Anonymous!</h1>
-                    <form action="/blind" method="POST">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input class="form-control" type="text" id="name" name="name"
-                                   placeholder="Enter your name here"/>
-                            <small id="nameHelp" class="form-text text-muted">Submit your name to appear on our visitors
-                                list!
-                            </small>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
+                    <h1 th:text="${visitDetails.name}">Hello Anonymous!</h1>
+                    <ul>
+                        <li th:text="${'date of visit: ' + #dates.formatISO(visitDetails.timestamp)}"></li>
+                        <li th:text="${'from IP address: ' + visitDetails.ip}"></li>
+                    </ul>
                 </div>
             </div>
         </div>
         <div class="col-sm-6">
             <div class="card">
                 <div class="card-header">
-                    Latest visits
+                    Latest visits of the same visitor
                 </div>
                 <div class="card-body">
                     <table class="table">
                         <tr th:each="visit : ${latestVisits}">
-                            <td th:text="${visit.name}">Onions</td>
                             <td th:text="${#dates.formatISO(visit.timestamp)}">2.41</td>
+                            <td th:text="${visit.ip}">2.41</td>
                         </tr>
                     </table>
                 </div>

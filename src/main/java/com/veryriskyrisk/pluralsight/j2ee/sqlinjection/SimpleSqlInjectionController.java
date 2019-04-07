@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,7 +22,7 @@ import java.util.logging.Logger;
  * Simple SQL injection attack vector:
  * - `Hacker'), ('2019-04-05', (select password from users where username = 'admin')) -- `
  * Entire query, after attack vector is appended may look like that:
- * - `INSERT INTO visitors VALUES('2019-04-05', 'Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
+ * - `INSERT INTO visits VALUES('2019-04-05', 'Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
  */
 @Controller
 public class SimpleSqlInjectionController {
@@ -35,7 +33,7 @@ public class SimpleSqlInjectionController {
     String connectionString;
 
     @PostMapping("/simple")
-    public String persistVisitor(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -47,19 +45,19 @@ public class SimpleSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
-            String insertVisitorQuery = "INSERT INTO visitors(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
-            model.addAttribute("query", insertVisitorQuery);
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
+            model.addAttribute("query", insertVisitQuery);
 
-            PreparedStatement insertVisitorStatement = connection.prepareStatement(
-                    insertVisitorQuery);
-            insertVisitorStatement.execute();
+            PreparedStatement insertVisitStatement = connection.prepareStatement(
+                    insertVisitQuery);
+            insertVisitStatement.execute();
 
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            Collection<Visit> visitorList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitorList);
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            throw new IllegalArgumentException("We cannot add this visitor", e);
+            throw new IllegalArgumentException("We cannot add this visit", e);
         } finally {
             try {
                 if (connection != null) {
@@ -73,24 +71,24 @@ public class SimpleSqlInjectionController {
         return "simple";
     }
 
-    private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
+    private Collection<Visit> getLatestVisits(Connection connection) throws SQLException {
         PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 5"
+                "SELECT name, timestamp FROM visits ORDER BY timestamp desc LIMIT 5"
         );
 
         selectVisitorsStatement.execute();
         ResultSet selectVisitorsResultset = selectVisitorsStatement.getResultSet();
 
-        Collection<Visitor> visitorList = new LinkedList<Visitor>();
+        Collection<Visit> visitsList = new LinkedList<>();
         while (selectVisitorsResultset.next()) {
-            visitorList.add(new Visitor(
+            visitsList.add(new Visit(
                     selectVisitorsResultset.getString("name"),
                     selectVisitorsResultset.getDate("timestamp")
 
             ));
 
         }
-        return visitorList;
+        return visitsList;
     }
 
     @GetMapping("/simple")
@@ -100,8 +98,8 @@ public class SimpleSqlInjectionController {
 
         try {
             connection = DriverManager.getConnection(connectionString);
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            Collection<Visit> visitsList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitsList);
 
             model.addAttribute("name", "Anonymous");
 

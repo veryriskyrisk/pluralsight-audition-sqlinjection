@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
 
-    <link rel="stylesheet" th:href="@{css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 
     <title>Hello, SQL injection!</title>
 </head>
@@ -64,9 +64,10 @@
                 </div>
                 <div class="card-body">
                     <table class="table">
-                        <tr th:each="visitor : ${latestVisitors}">
-                            <td th:text="${visitor.name}">Onions</td>
-                            <td th:text="${#dates.formatISO(visitor.timestamp)}">2.41</td>
+                        <tr th:each="visit : ${latestVisits}">
+                            <td><a th:href="${'/second-order/visit?id='+visit.visitId}" th:text="${visit.name}"></a>
+                            </td>
+                            <td th:text="${#dates.formatISO(visit.timestamp)}">2.41</td>
                         </tr>
                     </table>
                 </div>

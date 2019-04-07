@@ -31,7 +31,7 @@ public class BlindSqlInjectionController {
     String connectionString;
 
     @PostMapping("/blind")
-    public String persistVisitor(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -44,15 +44,15 @@ public class BlindSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            Collection<Visit> visitList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitList);
 
-            String insertVisitorQuery = "INSERT INTO visitors(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
-            model.addAttribute("query", insertVisitorQuery);
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
+            model.addAttribute("query", insertVisitQuery);
 
-            PreparedStatement insertVisitorStatement = connection.prepareStatement(
-                    insertVisitorQuery);
-            insertVisitorStatement.execute();
+            PreparedStatement insertVisitStatement = connection.prepareStatement(
+                    insertVisitQuery);
+            insertVisitStatement.execute();
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, e.toString(), e);
@@ -69,24 +69,24 @@ public class BlindSqlInjectionController {
         return "blind";
     }
 
-    private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
-        PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 5"
+    private Collection<Visit> getLatestVisits(Connection connection) throws SQLException {
+        PreparedStatement selectVisitsStatement = connection.prepareStatement(
+                "SELECT name, timestamp FROM visits ORDER BY timestamp desc LIMIT 5"
         );
 
-        selectVisitorsStatement.execute();
-        ResultSet selectVisitorsResultset = selectVisitorsStatement.getResultSet();
+        selectVisitsStatement.execute();
+        ResultSet selectVisitsResultset = selectVisitsStatement.getResultSet();
 
-        Collection<Visitor> visitorList = new LinkedList<Visitor>();
-        while (selectVisitorsResultset.next()) {
-            visitorList.add(new Visitor(
-                    selectVisitorsResultset.getString("name"),
-                    selectVisitorsResultset.getDate("timestamp")
+        Collection<Visit> visitList = new LinkedList<>();
+        while (selectVisitsResultset.next()) {
+            visitList.add(new Visit(
+                    selectVisitsResultset.getString("name"),
+                    selectVisitsResultset.getDate("timestamp")
 
             ));
 
         }
-        return visitorList;
+        return visitList;
     }
 
     @GetMapping("/blind")
@@ -96,8 +96,8 @@ public class BlindSqlInjectionController {
 
         try {
             connection = DriverManager.getConnection(connectionString);
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            Collection<Visit> visitList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitList);
 
             model.addAttribute("name", "Anonymous");
 

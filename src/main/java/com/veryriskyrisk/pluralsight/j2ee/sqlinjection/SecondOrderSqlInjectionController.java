@@ -17,6 +17,20 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ *
+ */
+
+/**
+ * Second order SQL injection attack vector:
+ * - `Walter Eugene "Radar" O' UNION SELECT username, '1-1-1917', password FROM users -- Reilly`
+ * Entire query, after attack vector is appended may look like that:
+ * - `SELECT name, timestamp, ip FROM visits WHERE name = 'Walter Eugene "Radar" O' UNION SELECT username, '1-1-1917', password FROM users -- Reilly' ORDER BY timestamp desc LIMIT 5`
+ *
+ * In order to run exploit go to second order page, submit attack vector via name field.
+ * New entry will appear on the right, click on the name that looks exactly as attack vector entered.
+ * You'll see passwords from `users` table displayed on the right
+ */
 @Controller
 public class SecondOrderSqlInjectionController {
 
@@ -26,7 +40,7 @@ public class SecondOrderSqlInjectionController {
     String connectionString;
 
     @PostMapping("/second-order")
-    public String persistVisitor(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -39,15 +53,19 @@ public class SecondOrderSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
-            String insertVisitorQuery = "INSERT INTO visitors(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
-            model.addAttribute("query", insertVisitorQuery);
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES(?, ?);";
+            model.addAttribute("query", insertVisitQuery);
 
-            PreparedStatement insertVisitorStatement = connection.prepareStatement(
-                    insertVisitorQuery);
-            insertVisitorStatement.execute();
+            PreparedStatement insertVisitStatement = connection.prepareStatement(
+                    insertVisitQuery);
 
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            insertVisitStatement.setString(1, timestamp);
+            insertVisitStatement.setString(2, name);
+
+            insertVisitStatement.execute();
+
+            Collection<Visit> visitList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitList);
 
         } catch (SQLException e) {
             StringWriter sw = new StringWriter();
@@ -68,24 +86,25 @@ public class SecondOrderSqlInjectionController {
         return "second-order";
     }
 
-    private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
-        PreparedStatement selectVisitorsStatement = connection.prepareStatement(
-                "SELECT name, timestamp FROM visitors ORDER BY timestamp desc LIMIT 5"
+    private Collection<Visit> getLatestVisits(Connection connection) throws SQLException {
+        PreparedStatement selectVisitsStatement = connection.prepareStatement(
+                "SELECT visit_id, name, timestamp FROM visits ORDER BY timestamp desc LIMIT 5"
         );
 
-        selectVisitorsStatement.execute();
-        ResultSet selectVisitorsResultset = selectVisitorsStatement.getResultSet();
+        selectVisitsStatement.execute();
+        ResultSet selectVisitsResultset = selectVisitsStatement.getResultSet();
 
-        Collection<Visitor> visitorList = new LinkedList<Visitor>();
-        while (selectVisitorsResultset.next()) {
-            visitorList.add(new Visitor(
-                    selectVisitorsResultset.getString("name"),
-                    selectVisitorsResultset.getDate("timestamp")
+        Collection<Visit> visitList = new LinkedList<>();
+        while (selectVisitsResultset.next()) {
+            visitList.add(new Visit(
+                    selectVisitsResultset.getLong("visit_id"),
+                    selectVisitsResultset.getString("name"),
+                    selectVisitsResultset.getDate("timestamp")
 
             ));
 
         }
-        return visitorList;
+        return visitList;
     }
 
     @GetMapping("/second-order")
@@ -95,8 +114,8 @@ public class SecondOrderSqlInjectionController {
 
         try {
             connection = DriverManager.getConnection(connectionString);
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
+            Collection<Visit> visitList = getLatestVisits(connection);
+            model.addAttribute("latestVisits", visitList);
 
             model.addAttribute("name", "Anonymous");
 
@@ -114,6 +133,67 @@ public class SecondOrderSqlInjectionController {
         }
 
         return "second-order";
+    }
+
+    @GetMapping("/second-order/visit")
+    public String visitDetails(@RequestParam(name = "id", required = true) Long id, ModelMap model) {
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection(connectionString);
+
+            String selectVisit = "SELECT * FROM visits WHERE visit_id = ?";
+
+            PreparedStatement selectVisitStatement = connection.prepareStatement(
+                    selectVisit);
+
+            selectVisitStatement.setLong(1, id);
+            selectVisitStatement.execute();
+            ResultSet visitDetailsResultset = selectVisitStatement.getResultSet();
+            visitDetailsResultset.next();
+
+            String visitorName = visitDetailsResultset.getString("name");
+            Date timestamp = visitDetailsResultset.getDate("timestamp");
+            String ip = visitDetailsResultset.getString("ip");
+
+            model.addAttribute("visitDetails", new Visit(visitorName, timestamp, ip));
+
+            String selectVisitsWithTheSameName = "SELECT name, timestamp, ip FROM visits WHERE name = '" + visitorName + "' ORDER BY timestamp desc LIMIT 5";
+            model.addAttribute("query", selectVisitsWithTheSameName);
+            PreparedStatement selectVisitsStatement = connection.prepareStatement(
+                    selectVisitsWithTheSameName
+            );
+
+            selectVisitsStatement.execute();
+            ResultSet selectVisitsResultset = selectVisitsStatement.getResultSet();
+
+            Collection<Visit> visitList = new LinkedList<>();
+            while (selectVisitsResultset.next()) {
+                visitList.add(new Visit(
+                        selectVisitsResultset.getString("name"),
+                        selectVisitsResultset.getDate("timestamp"),
+                        selectVisitsResultset.getString("ip")
+                ));
+
+            }
+            model.addAttribute("latestVisits", visitList);
+
+        } catch (SQLException e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            model.addAttribute("exception", sw.toString());
+            logger.log(Level.SEVERE, e.toString(), e);
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return "second-order-details";
     }
 }
 
