@@ -70,7 +70,7 @@ public class SimpleSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "simple";
     }
 
     private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
@@ -118,7 +118,7 @@ public class SimpleSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "simple";
     }
 
     @ExceptionHandler(Exception.class)

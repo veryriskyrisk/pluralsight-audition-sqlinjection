@@ -65,7 +65,7 @@ public class BlindSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "blind";
     }
 
     private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
@@ -113,7 +113,7 @@ public class BlindSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "blind";
     }
 }
 

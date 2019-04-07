@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
+
+    <link rel="stylesheet" th:href="@{css/styles.css}">
+
+    <title>Hello, SQL injection!</title>
+</head>
+<body>
+<div class="container">
+    <div class="skewed-nav">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a th:classappend="${#request.getServletPath() == '/simple' ? 'active' : ''}" class="nav-link"
+                   href="/simple">Simple SQL injection</a>
+            </li>
+            <li class="nav-item">
+                <a th:classappend="${#request.getServletPath() == '/blind' ? 'active' : ''}" class="nav-link"
+                   href="/blind">Blind SQL injection</a>
+            </li>
+            <li class="nav-item">
+                <a th:classappend="${#request.getServletPath() == '/second-order' ? 'active' : ''}" class="nav-link"
+                   href="/second-order">Second order SQL injection</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="jumbotron">
+        <h1 class="display-4">Hello, blind SQL injection!</h1>
+        <p class="lead">This is a second, blind SQL injection example</p>
+        <hr class="my-4">
+        <p>Use form below to test for SQL injection</p>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    Join our elite latest visitors list!
+                </div>
+                <div class="card-body">
+                    <h1 th:text="#{hello(${name})}">Hello Anonymous!</h1>
+                    <form action="/simple" method="POST">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input class="form-control" type="text" id="name" name="name"
+                                   placeholder="Enter your name here"/>
+                            <small id="nameHelp" class="form-text text-muted">Submit your name to appear on our visitors
+                                list!
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card-header">
+                Latest visitors
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr th:each="visitor : ${latestVisitors}">
+                        <td th:text="${visitor.name}">Onions</td>
+                        <td th:text="${#dates.formatISO(visitor.timestamp)}">2.41</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" th:if="${#ctx.containsVariable('query') || #ctx.containsVariable('exception')}">
+        <div class="card-header">
+            <p>
+                <a class="btn btn-danger" data-toggle="collapse" href="#debugInfo" role="button" id="debug"
+                   aria-expanded="false"
+                   aria-controls="debugInfo">Debug information</a>
+            </p>
+        </div>
+        <div class="card-body">
+            <div class="collapse" id="debugInfo">
+                <pre id="queryid" th:if="${query}" class="prettyprint" th:text="${query}"></pre>
+                <pre th:if="${exception}" th:text="${exception}"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!--script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script-->
+
+
+</div>
+</div>
+<script type="text/javascript" th:src="@{/js/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/prettify.js}"></script>
+<script type="text/javascript" th:src="@{/js/utilities.js}"></script>
+
+</body>
+</html>

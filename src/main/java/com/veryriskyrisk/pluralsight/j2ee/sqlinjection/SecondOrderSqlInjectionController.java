@@ -65,7 +65,7 @@ public class SecondOrderSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "second-order";
     }
 
     private Collection<Visitor> getLatestVisitors(Connection connection) throws SQLException {
@@ -113,7 +113,7 @@ public class SecondOrderSqlInjectionController {
             }
         }
 
-        return "welcome";
+        return "second-order";
     }
 }
 
