@@ -33,9 +33,6 @@
 
     <div class="jumbotron">
         <h1 class="display-4">Hello, blind SQL injection!</h1>
-        <p class="lead">This is a second, blind SQL injection example</p>
-        <hr class="my-4">
-        <p>Use form below to test for SQL injection</p>
     </div>
 
     <div class="row">
@@ -46,7 +43,7 @@
                 </div>
                 <div class="card-body">
                     <h1 th:text="#{hello(${name})}">Hello Anonymous!</h1>
-                    <form action="/simple" method="POST">
+                    <form action="/blind" method="POST">
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input class="form-control" type="text" id="name" name="name"
@@ -61,16 +58,18 @@
             </div>
         </div>
         <div class="col-sm-6">
-            <div class="card-header">
-                Latest visitors
-            </div>
-            <div class="card-body">
-                <table class="table">
-                    <tr th:each="visitor : ${latestVisitors}">
-                        <td th:text="${visitor.name}">Onions</td>
-                        <td th:text="${#dates.formatISO(visitor.timestamp)}">2.41</td>
-                    </tr>
-                </table>
+            <div class="card">
+                <div class="card-header">
+                    Latest visitors
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr th:each="visitor : ${latestVisitors}">
+                            <td th:text="${visitor.name}">Onions</td>
+                            <td th:text="${#dates.formatISO(visitor.timestamp)}">2.41</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

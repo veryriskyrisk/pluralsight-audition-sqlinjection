@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * Simple SQL injection attack vector:
  * - `Hacker'), ('2019-04-05', (select password from users where username = 'admin')) -- `
  * Entire query, after attack vector is appended may look like that:
- * - `INSERT INTO visitors VALUES('2019-04-05', 'Hacker'), ('2019-04-05', (select password from users where username = 'admin')) -- `
+ * - `INSERT INTO visitors VALUES('2019-04-05', 'Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
  */
 @Controller
 public class SimpleSqlInjectionController {

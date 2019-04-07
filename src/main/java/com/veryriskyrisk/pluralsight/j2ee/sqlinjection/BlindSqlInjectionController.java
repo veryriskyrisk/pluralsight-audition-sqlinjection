@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +15,13 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Blind SQL injection attack vector:
+ * - Hacker'), ('2019-04-05', (select password from users where username = 'admin' AND (password LIKE 'z%' OR SLEEP(3)))) --
+ * Entire query, after attack vector is appended may look like that:
+ * - INSERT INTO visitors(timestamp, name) VALUES('2019-04-07T17:02:41.1557991', 'Hacker'),
+ * ('2019-04-05', (select password from users where username = 'admin' AND (password LIKE 'z%' OR SLEEP(3)))) -- ');
+ */
 @Controller
 public class BlindSqlInjectionController {
 
@@ -39,6 +44,9 @@ public class BlindSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
+            Collection<Visitor> visitorList = getLatestVisitors(connection);
+            model.addAttribute("latestVisitors", visitorList);
+
             String insertVisitorQuery = "INSERT INTO visitors(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
             model.addAttribute("query", insertVisitorQuery);
 
@@ -46,14 +54,7 @@ public class BlindSqlInjectionController {
                     insertVisitorQuery);
             insertVisitorStatement.execute();
 
-            Collection<Visitor> visitorList = getLatestVisitors(connection);
-            model.addAttribute("latestVisitors", visitorList);
-
         } catch (SQLException e) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            model.addAttribute("exception", sw.toString());
             logger.log(Level.SEVERE, e.toString(), e);
         } finally {
             try {
