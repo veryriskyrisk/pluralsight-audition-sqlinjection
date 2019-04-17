@@ -33,7 +33,7 @@ public class SimpleSqlInjectionController {
     String connectionString;
 
     @PostMapping("/simple")
-    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model, HttpServletRequest request) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -45,7 +45,7 @@ public class SimpleSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
-            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name, ip) VALUES('" + timestamp + "', '" + name + "', '" + request.getRemoteAddr() + "');";
             model.addAttribute("query", insertVisitQuery);
 
             PreparedStatement insertVisitStatement = connection.prepareStatement(

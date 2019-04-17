@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
@@ -17,9 +18,6 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- */
 
 /**
  * Second order SQL injection attack vector:
@@ -40,7 +38,7 @@ public class SecondOrderSqlInjectionController {
     String connectionString;
 
     @PostMapping("/second-order")
-    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model, HttpServletRequest request) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -53,7 +51,7 @@ public class SecondOrderSqlInjectionController {
         try {
             connection = DriverManager.getConnection(connectionString);
 
-            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES(?, ?);";
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name, ip) VALUES(?, ?, ?);";
             model.addAttribute("query", insertVisitQuery);
 
             PreparedStatement insertVisitStatement = connection.prepareStatement(
@@ -61,6 +59,7 @@ public class SecondOrderSqlInjectionController {
 
             insertVisitStatement.setString(1, timestamp);
             insertVisitStatement.setString(2, name);
+            insertVisitStatement.setString(3, request.getRemoteAddr());
 
             insertVisitStatement.execute();
 

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +32,7 @@ public class BlindSqlInjectionController {
     String connectionString;
 
     @PostMapping("/blind")
-    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model) {
+    public String persistVisit(@RequestParam(name = "name", required = false) String name, ModelMap model, HttpServletRequest request) {
 
 
         name = (name == null || name.equals("")) ? "Anonymous" : name;
@@ -47,7 +48,7 @@ public class BlindSqlInjectionController {
             Collection<Visit> visitList = getLatestVisits(connection);
             model.addAttribute("latestVisits", visitList);
 
-            String insertVisitQuery = "INSERT INTO visits(timestamp, name) VALUES('" + timestamp + "', '" + name + "');";
+            String insertVisitQuery = "INSERT INTO visits(timestamp, name, ip) VALUES('" + timestamp + "', '" + name + "', '" + request.getRemoteAddr() + "');";
             model.addAttribute("query", insertVisitQuery);
 
             PreparedStatement insertVisitStatement = connection.prepareStatement(

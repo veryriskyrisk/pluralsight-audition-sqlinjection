@@ -25,7 +25,8 @@
                    href="/blind">Blind SQL injection</a>
             </li>
             <li class="nav-item">
-                <a th:classappend="${#request.getServletPath() == '/second-order' ? 'active' : ''}" class="nav-link"
+                <a th:classappend="${#strings.startsWith(#request.getServletPath(), '/second-order') ? 'active' : ''}"
+                   class="nav-link"
                    href="/second-order">Second order SQL injection</a>
             </li>
         </ul>
