@@ -20,9 +20,9 @@ import java.util.logging.Logger;
 
 /**
  * Simple SQL injection attack vector:
- * - `Hacker'), ('2019-04-05', (select password from users where username = 'admin')) -- `
+ * - `Jane The Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
  * Entire query, after attack vector is appended may look like that:
- * - `INSERT INTO visits VALUES('2019-04-05', 'Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
+ * - `INSERT INTO visits VALUES('2019-04-05', 'Jane The Hacker'), ('2019-04-05', (SELECT password FROM users WHERE username = 'admin')) -- `
  */
 @Controller
 public class SimpleSqlInjectionController {
